@@ -27,8 +27,11 @@ export class AppComponent {
   stagingApiUrl = '';
   localApiUrl = 'http://localhost:8050/api/v1/memberships/simulate-incentive'; // Local Backend URL
 
-  responseHeader: string[] = ["Membership ID", "Level", "Rank Code", "State", "Total Incentive", "Remarks"];;
+  responseHeader: string[] = ["Membership ID", "Level", "Rank Code", "State", "Percentage", "Total Incentive", "Remarks"];;
   responseData: ResponseModel[] = [];
+
+  totalPercentage: number = 0;
+  totalIncentive: number = 0;
 
   exportData: RequestModel[] = [
     {
@@ -120,28 +123,9 @@ export class AppComponent {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-
-    
   }
 
   exportExample(): void {
-    let sample1: RequestModel = {
-      memberId: "ET-111111",
-      rankCode: "EM",
-      state: "SELANGOR",
-      referral: "NULL",
-      topup: 50, 
-    }
-
-    let sample2: RequestModel = {
-      memberId: "ET-222222",
-      rankCode: "EM",
-      state: "SELANGOR",
-      referral: "ET-111111",
-      topup: 30, 
-    }
-
-   
     // Data array to be used for the Excel file
     const data: RequestModel[] = this.exportData;
 
@@ -236,6 +220,10 @@ export class AppComponent {
     this.http.post<any>(`${this.localApiUrl}`, formData, { params }).subscribe(
       (response) => {
         this.responseData = response;
+
+        // Calculate total percentage and total incentive
+        this.totalPercentage = this.responseData.reduce((sum, item) => sum + (item.percentage || 0), 0);
+        this.totalIncentive = this.responseData.reduce((sum, item) => sum + (item.totalIncentive || 0), 0);
       },
       (error) => {
         console.error('Error during simulation:', error);

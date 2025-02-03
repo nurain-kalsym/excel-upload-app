@@ -84,19 +84,27 @@
             <td class="p-2 border border-gray-300">{{ row.level ?? 'NULL' }}</td>
             <td class="p-2 border border-gray-300">{{ row.rankCode }}</td>
             <td class="p-2 border border-gray-300">{{ row.state ? row.state : 'NULL' }}</td>
-            <td class="p-2 border border-gray-300">{{ row.totalIncentive }}</td>
+            <td class="p-2 border border-gray-300">{{ row.percentage | number: '1.2-2'}} %</td>
+            <td class="p-2 border border-gray-300"> RM {{ row.totalIncentive | number: '1.2-2' }}</td>
             <td class="p-2 border border-gray-300">{{ row.remarks }}</td>
           </tr>
         </tbody>
       </table>
-      
-      <div class="flex justify-end py-2">
-        <button 
-          type="button"
-            (click)="clearData(fileInput)"
-            class="bg-red-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-600 transition">
-            Clear
-        </button>
+
+      <div class="flex flex-row py-2 justify-between">
+        <div class="flex flex-row py-2 gap-2">
+          <div class="text-xl"> <span class="font-bold"> Total Percentage: </span> {{ totalPercentage | number: '1.2-2'}}% </div>
+          <div class="text-xl"> <span class="font-bold"> Total Incentive: </span> RM {{ totalIncentive | number: '1.2-2'}} </div>
+        </div>
+        <div class="flex justify-end py-2 gap-2">
+          <button 
+            type="button"
+              (click)="clearData(fileInput)"
+              class="bg-red-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-600 transition">
+              Clear
+          </button>
+        </div>
       </div>
+      
   </div>
 </div>

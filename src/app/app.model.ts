@@ -4,6 +4,7 @@ export interface ResponseModel {
     rankCode: string;
     state: string;
     totalIncentive: number;
+    percentage: number;
     remarks: string | null;
   }
 
