@@ -153,7 +153,6 @@ export class AppComponent {
 
   onModeChange(event: Event, fileInput: HTMLInputElement) {
     const selectedValue = (event.target as HTMLSelectElement).value;
-    console.log('Selected Mode:', selectedValue);
 
     if (selectedValue === 'BEFORE_CUTOFF') {
       this.modeMessage = `To simulate a month worth of calculation before cut off period. 
@@ -296,8 +295,6 @@ export class AppComponent {
                 (sum, incentive) => sum + incentive.percentage, 0
               );
             });
-
-            console.log(this.dailyResponseData)
 
         } else if (this.selectedMode === "UPGRADE") {
           this.responseData = response;
