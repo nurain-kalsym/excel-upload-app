@@ -18,7 +18,7 @@
           [(ngModel)]="totalAmount"
           type="number"
           name="totalAmount"
-          placeholder="Total Amount"
+          placeholder="Total Amount (RM)"
           class="border border-gray-300 rounded-lg p-2 w-full"
         />
         </div>
@@ -28,11 +28,20 @@
           [(ngModel)]="selectedMode"
           name="mode"
           class="border border-gray-300 rounded-lg p-2 w-full"
+          (change)="onModeChange($event, fileInput)"
         >
           <option value="" disabled selected>Select Mode</option>
-          <option value="TOPUP">TOPUP</option>
-          <option value="NONE">NONE</option>
+          <option value="BEFORE_CUTOFF">INCENTIVE CALCULATION - BEFORE CUT OFF</option>
+          <option value="AFTER_CUTOFF">INCENTIVE CALCULATION - CUT OFF</option>
+          <option value="UPGRADE">UPGRADE TIER</option>
+         
         </select>
+        
+        <div *ngIf="selectedMode && modeMessage !== ''"
+          class="text-rose-400">
+          <span class="font-semibold"> Note: </span>
+          <span> {{ modeMessage }} </span>
+        </div>
 
         <input 
           #fileInput
@@ -66,34 +75,66 @@
   </div>
 
   <div class="w-full flex justify-center">
-    <div class="w-full mt-8" *ngIf="tableData?.length || responseData?.length">
+    <div class="w-full mt-8" *ngIf="responseData?.length || dailyResponseData?.length">
       <h2 class="text-lg font-semibold mb-4">Results</h2>
-      <table class="w-full border border-gray-300 rounded-lg text-left">
-        <thead class="bg-gray-200">
-          <tr>
-            <!-- <th *ngFor="let header of tableHeaders" class="p-2 border border-gray-300">{{ header }}</th> -->
-            <th *ngFor="let header of responseHeader" class="p-2 border border-gray-300">{{ header }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- <tr *ngFor="let row of tableData">
-            <td *ngFor="let cell of row" class="p-2 border border-gray-300">{{ cell }}</td>
-          </tr> -->
-          <tr *ngFor="let row of responseData">
-            <td class="p-2 border border-gray-300">{{ row.memberId }}</td>
-            <td class="p-2 border border-gray-300">{{ row.level ?? 'NULL' }}</td>
-            <td class="p-2 border border-gray-300">{{ row.rankCode }}</td>
-            <td class="p-2 border border-gray-300">{{ row.state ? row.state : 'NULL' }}</td>
-            <td class="p-2 border border-gray-300">{{ row.percentage | number: '1.2-2'}} %</td>
-            <td class="p-2 border border-gray-300"> RM {{ row.totalIncentive | number: '1.2-2' }}</td>
-            <td class="p-2 border border-gray-300">{{ row.remarks }}</td>
-          </tr>
-        </tbody>
-      </table>
 
-      <div class="flex flex-row py-2 justify-between">
+      <div class="py-3">
+        <table class="w-full border border-gray-300 rounded-lg text-left">
+          <thead class="bg-gray-200">
+            <ng-container *ngIf="selectedMode !== 'UPGRADE'; else upgradeHeaders">
+              <tr>
+                <th *ngFor="let header of responseHeader" class="p-2 border border-gray-300">{{ header }}</th>
+              </tr>
+            </ng-container>
+            <ng-template #upgradeHeaders>
+              <tr>
+                <th *ngFor="let header of upgradeHeader" class="p-2 border border-gray-300">{{ header }}</th>
+              </tr>
+            </ng-template>
+          </thead>
+
+          <tbody *ngIf="selectedMode !== 'UPGRADE'">
+            <ng-container *ngFor="let dailyResponse of dailyResponseData">
+              <tr class="bg-slate-100">
+                <td class="border border-gray-300 px-4 py-2" [attr.colspan]="responseHeader.length"> 
+                  <span class="font-semibold"> Date: </span>
+                  <span> {{ dailyResponse.date }} </span>
+                  <span class="italic">
+                    {{ " (Incentives: RM " + (dailyResponse.dailyIncentive | number: '1.2-2') + ", Percentage: " + (dailyResponse.dailyPercentage | number: '1.2-2') + "% )"}}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngFor="let row of dailyResponse.incentives" class="hover:bg-gray-50">
+                <td class="p-2 border border-gray-300">{{ row.memberId }}</td>
+                <td class="p-2 border border-gray-300">{{ row.level ?? 'NULL' }}</td>
+                <td class="p-2 border border-gray-300">{{ row.rankCode }}</td>
+                <td class="p-2 border border-gray-300">{{ row.state || 'NULL' }}</td>
+                <td class="p-2 border border-gray-300">{{ row.percentage | number: '1.2-2' }} %</td>
+                <td class="p-2 border border-gray-300">RM {{ row.totalIncentive | number: '1.2-2' }}</td>
+                <td class="p-2 border border-gray-300">{{ row.remarks }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+      
+          <tbody *ngIf="selectedMode === 'UPGRADE'">
+            <tr *ngFor="let row of responseData" class="hover:bg-gray-50">
+              <td class="p-2 border border-gray-300">{{ row.memberId }}</td>
+              <td class="p-2 border border-gray-300">{{ row.rankCode }}</td>
+              <td class="p-2 border border-gray-300">{{ row.upgradedCode || 'NULL' }}</td>
+              <td class="p-2 border border-gray-300">{{ row.state || 'NULL' }}</td>
+              <td class="p-2 border border-gray-300">RM {{ row.totalIncentive | number: '1.2-2' }}</td>
+              <td class="p-2 border border-gray-300">{{ row.remarks }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+
+      <div class="flex flex-row py-2 justify-between" *ngIf="selectedMode !== 'UPGRADE'">
         <div class="flex flex-row py-2 gap-2">
-          <div class="text-xl"> <span class="font-bold"> Total Percentage: </span> {{ totalPercentage | number: '1.2-2'}}% </div>
+          <div class="text-xl" > 
+            <span class="font-bold"> Total Percentage: </span> {{ totalPercentage | number: '1.2-2'}}% 
+          </div>
           <div class="text-xl"> <span class="font-bold"> Total Incentive: </span> RM {{ totalIncentive | number: '1.2-2'}} </div>
         </div>
         <div class="flex justify-end py-2 gap-2">
@@ -104,6 +145,15 @@
               Clear
           </button>
         </div>
+      </div>
+
+      <div class="flex flex-row py-2 justify-end" *ngIf="selectedMode === 'UPGRADE'">
+          <button 
+            type="button"
+              (click)="clearData(fileInput)"
+              class="bg-red-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-600 transition">
+              Clear
+          </button>
       </div>
       
   </div>
